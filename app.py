@@ -38,6 +38,12 @@ def fmt_num(value, prefix=""):
     return f"{prefix}{value:,.2f}"
 
 
+def fmt_ratio(value):
+    if value in (None, "N/A") or not isinstance(value, (int, float)):
+        return "N/A"
+    return f"{value:.2f}"
+
+
 # ---------------------------------------------------------------
 # CACHED DATA/PIPELINE FUNCTIONS
 # Caching avoids re-hitting Yahoo Finance and re-running the whole
@@ -450,30 +456,69 @@ if run_button:
         if info is None:
             st.info("Fundamental data unavailable for this symbol.")
         else:
-            f1, f2, f3, f4 = st.columns(4)
-            f1.metric("Market Cap (₹)", fmt_num(info.get("market_cap")))
-            f2.metric("P/E (Trailing)", info.get("pe_ratio", "N/A"))
-            f3.metric("P/E (Forward)", info.get("forward_pe", "N/A"))
-            f4.metric("EPS (₹)", info.get("eps", "N/A"))
+            st.markdown("#### 📌 Overview")
+            o1, o2, o3, o4, o5 = st.columns(5)
+            o1.metric("Market Cap (₹)", fmt_num(info.get("market_cap")))
+            o2.metric("Current Price (₹)", fmt_ratio(info.get("current_price")))
+            o3.metric("Beta", fmt_ratio(info.get("beta")))
+            o4.metric("52W High (₹)", fmt_ratio(info.get("week_52_high")))
+            o5.metric("52W Low (₹)", fmt_ratio(info.get("week_52_low")))
+            o6, o7 = st.columns(2)
+            o6.metric("Avg Volume", fmt_num(info.get("avg_volume")))
+            o7.metric("Shares Outstanding", fmt_num(info.get("shares_outstanding")))
 
-            g1, g2, g3, g4 = st.columns(4)
-            g1.metric("Book Value (₹)", info.get("book_value", "N/A"))
-            g2.metric("Dividend Yield", fmt_pct(info.get("dividend_yield")))
-            g3.metric("ROE", fmt_pct(info.get("roe")))
-            g4.metric("Debt/Equity", info.get("debt_to_equity", "N/A"))
+            st.markdown("#### 💰 Valuation")
+            v1, v2, v3, v4, v5, v6 = st.columns(6)
+            v1.metric("P/E (Trailing)", fmt_ratio(info.get("pe_ratio")))
+            v2.metric("P/E (Forward)", fmt_ratio(info.get("forward_pe")))
+            v3.metric("P/B Ratio", fmt_ratio(info.get("price_to_book")))
+            v4.metric("PEG Ratio", fmt_ratio(info.get("peg_ratio")))
+            v5.metric("EV/EBITDA", fmt_ratio(info.get("ev_to_ebitda")))
+            v6.metric("EV/Revenue", fmt_ratio(info.get("ev_to_revenue")))
 
-            h1, h2, h3, h4 = st.columns(4)
-            h1.metric("Beta", info.get("beta", "N/A"))
-            h2.metric("52W High (₹)", info.get("week_52_high", "N/A"))
-            h3.metric("52W Low (₹)", info.get("week_52_low", "N/A"))
-            h4.metric("Profit Margin", fmt_pct(info.get("profit_margin")))
+            st.markdown("#### 📈 Profitability")
+            p1, p2, p3, p4, p5 = st.columns(5)
+            p1.metric("ROE", fmt_pct(info.get("roe")))
+            p2.metric("ROA", fmt_pct(info.get("roa")))
+            p3.metric("Operating Margin", fmt_pct(info.get("operating_margin")))
+            p4.metric("Profit Margin", fmt_pct(info.get("profit_margin")))
+            p5.metric("Gross Margin", fmt_pct(info.get("gross_margin")))
 
-            st.metric("Revenue Growth (YoY)", fmt_pct(info.get("revenue_growth")))
+            st.markdown("#### 🏦 Financial Health")
+            h1, h2, h3, h4, h5 = st.columns(5)
+            h1.metric("Debt/Equity", fmt_ratio(info.get("debt_to_equity")))
+            h2.metric("Current Ratio", fmt_ratio(info.get("current_ratio")))
+            h3.metric("Quick Ratio", fmt_ratio(info.get("quick_ratio")))
+            h4.metric("Total Cash (₹)", fmt_num(info.get("total_cash")))
+            h5.metric("Total Debt (₹)", fmt_num(info.get("total_debt")))
+            st.metric("Free Cash Flow (₹)", fmt_num(info.get("free_cash_flow")))
+
+            st.markdown("#### 🧮 Per-Share Metrics")
+            s1, s2, s3, s4, s5 = st.columns(5)
+            s1.metric("EPS (₹)", fmt_ratio(info.get("eps")))
+            s2.metric("Forward EPS (₹)", fmt_ratio(info.get("forward_eps")))
+            s3.metric("Book Value (₹)", fmt_ratio(info.get("book_value")))
+            s4.metric("Revenue/Share (₹)", fmt_ratio(info.get("revenue_per_share")))
+            s5.metric("Cash/Share (₹)", fmt_ratio(info.get("cash_per_share")))
+
+            st.markdown("####  Growth")
+            g1, g2, g3 = st.columns(3)
+            g1.metric("Revenue Growth (YoY)", fmt_pct(info.get("revenue_growth")))
+            g2.metric("Earnings Growth (YoY)", fmt_pct(info.get("earnings_growth")))
+            g3.metric("Earnings Growth (QoQ)", fmt_pct(info.get("earnings_qtr_growth")))
+
+            st.markdown("#### 🏛️ Dividend & Ownership")
+            d1, d2, d3, d4 = st.columns(4)
+            d1.metric("Dividend Yield", fmt_pct(info.get("dividend_yield")))
+            d2.metric("Payout Ratio", fmt_pct(info.get("payout_ratio")))
+            d3.metric("Held by Institutions", fmt_pct(info.get("pct_held_institutions")))
+            d4.metric("Held by Insiders", fmt_pct(info.get("pct_held_insiders")))
 
             st.caption(
                 "Fundamentals are sourced live from Yahoo Finance at run time and reflect "
                 "the company's overall financial health — separate from the technical/ML "
-                "analysis above, which only looks at price and volume patterns."
+                "analysis above, which only looks at price and volume patterns. Some fields "
+                "may show N/A if Yahoo Finance doesn't report them for this company."
             )
 
 else:
