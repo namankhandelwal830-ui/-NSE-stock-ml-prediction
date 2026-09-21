@@ -1,0 +1,20 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS/editor junk
+.DS_Store
+.vscode/
+*.log
+
+# Data/output (regenerated at runtime, don't need to be in the repo)
+*.pdf
